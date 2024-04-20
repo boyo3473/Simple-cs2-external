@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{a96ac57c-750c-4376-9537-fb3c79d1b821}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\memory">
+      <UniqueIdentifier>{fe6bc5e4-a7e9-445e-828f-1adf15f427c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\offsets">
+      <UniqueIdentifier>{5842243d-95f9-4405-bec0-643eba6ab324}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Vector">
+      <UniqueIdentifier>{3253cd56-fd7f-457b-8256-4a2b84424f49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Main">
+      <UniqueIdentifier>{ae6e1280-b71b-4c6b-839d-06db73a02b2f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>src\Main</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="memory.h">
+      <Filter>src\memory</Filter>
+    </ClInclude>
+    <ClInclude Include="offsets.h">
+      <Filter>src\offsets</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector3.h">
+      <Filter>src\Vector</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
