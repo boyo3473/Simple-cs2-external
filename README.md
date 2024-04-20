@@ -6,3 +6,6 @@ features >> trigger bot, aimbot (aimbot is x only ), glow esp
 
 Feel free to make a pull request to fix my bad logic!
 
+
+
+![Uploading Screenshot 2024-04-20 194306.png…]()
