@@ -1,12 +1,13 @@
 # Simple-cs2-external
 
-USE AT YOUR OWN RISK MAY BE DETECTED 🔴
+# USE AT YOUR OWN RISK MAY BE DETECTED 🔴
 
-features >> trigger bot, aimbot (aimbot is x only ), glow esp
+# tutorial >> compile as Dbug and x64 then run cs2 external.exe in lobby
 
-Feel free to make a pull request to fix my bad logic!
+# features >> trigger bot, aimbot (aimbot is x only ), glow esp
 
-discord server: https://discord.gg/C6QWYVPr77
+# Feel free to make a pull request to fix my bad logic!
 
 
-![Uploading Screenshot 2024-04-20 194306.png…]()
+# discord server: https://discord.gg/C6QWYVPr77
+
