@@ -288,6 +288,7 @@ void aimbot(Memory& mem, uintptr_t client) {
     
 
                 mem.Write<Vector3>(client + offsets::dwViewAngles, angleToEnemy);
+                continue;
             }
         }
 
