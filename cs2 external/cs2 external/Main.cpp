@@ -6,6 +6,20 @@
 
 
 
+//imgui
+#include <Windows.h>
+#include <tchar.h>
+#include <d3d11.h>
+#include <d3dcompiler.h>
+#include <DirectXMath.h>
+#include "imgui/imgui.h"
+#include "imgui_impl_dx11.h"
+#include "imgui_impl_win32.h"
+#include "imgui_internal.h"
+
+
+
+
 using namespace std;
 
 namespace config {
@@ -192,7 +206,6 @@ void aimbot() {
 
         uintptr_t localPlayer = VARS::memRead<uintptr_t>(VARS::baseAddress + offsets::dwLocalPlayerPawn);
         if (!localPlayer) {
-            std::cout << "Failed to find local player." << std::endl;
             continue;
         }
 
@@ -231,7 +244,7 @@ void aimbot() {
 
 
 
-            if (config::team_check == true)
+            if (config::team_check == true )
             {
                 if (playerTeam != VARS::memRead<int>(localPlayer + offsets::m_iTeamNum) && playerHealth > 0)
                 {
@@ -250,10 +263,10 @@ void aimbot() {
                     }
                 }
             }
-
-            else
-            {
-                if (playerHealth > 0) {
+    
+        else
+        {
+                if (playerHealth > 0 ) {
 
 
 
@@ -275,19 +288,27 @@ void aimbot() {
             }
         }
 
-
-        if (GetAsyncKeyState(VK_SHIFT) && config::aimbot == true) {
+        int PlayerHealth = VARS::memRead<int>(closestEntityPawn + offsets::m_iHealth);
+        if (GetAsyncKeyState(VK_SHIFT) && config::aimbot && closestEntityPawn != 0 && PlayerHealth > 0 && PlayerHealth <= 100) {
             if (closestEntityPawn != 0) {
-
-
+                if (PlayerHealth <= 0 || PlayerHealth > 100)
+                    continue;
+               
                 Vector3 closestEnemyPos = VARS::memRead<Vector3>(closestEntityPawn + offsets::vecOrigin);
                 Vector3 angleToEnemy = CalcAngle(localPlayerPos, closestEnemyPos);
 
+              
+                Vector3 currentViewAngles = VARS::memRead<Vector3>(VARS::baseAddress + offsets::dwViewAngles);
+                angleToEnemy.x = currentViewAngles.x; 
+                angleToEnemy.z = currentViewAngles.z; 
+    
 
-                
                 VARS::memWrite<Vector3>(VARS::baseAddress + offsets::dwViewAngles, angleToEnemy);
+                continue;
             }
         }
+
+
 
     }
 }
