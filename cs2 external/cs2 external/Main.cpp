@@ -6,7 +6,6 @@
 
 
 
-
 using namespace std;
 
 namespace config {
@@ -23,21 +22,21 @@ namespace config {
 
 
 
-void Trigger_bot(Memory& mem, uintptr_t client) {
+void Trigger_bot() {
     while (true) {
         if (GetAsyncKeyState(VK_SHIFT) && config::trigger_bot) {
-            const auto localPlayer = mem.Read<LONGLONG>(client + offsets::dwLocalPlayerPawn);
-            const auto playerTeam = mem.Read<int>(localPlayer + offsets::m_iTeamNum);
-            const auto entityId = mem.Read<int>(localPlayer + offsets::m_iIDEntIndex);
+            const auto localPlayer = VARS::memRead<LONGLONG>(VARS::baseAddress + offsets::dwLocalPlayerPawn);
+            const auto playerTeam = VARS::memRead<int>(localPlayer + offsets::m_iTeamNum);
+            const auto entityId = VARS::memRead<int>(localPlayer + offsets::m_iIDEntIndex);
 
             if (localPlayer) {
-                auto health = mem.Read<LONGLONG>(localPlayer + offsets::m_iHealth);
+                auto health = VARS::memRead<LONGLONG>(localPlayer + offsets::m_iHealth);
 
                 if (health && entityId > 0) {
-                    auto entList = mem.Read<LONGLONG>(client + offsets::dwEntityList);
-                    auto entEntry = mem.Read<LONGLONG>(entList + 0x8 * (entityId >> 9) + 0x10);
-                    auto entity = mem.Read<LONGLONG>(entEntry + 120 * (entityId & 0x1FF));
-                    auto entityTeam = mem.Read<int>(entity + offsets::m_iTeamNum);
+                    auto entList = VARS::memRead<LONGLONG>(VARS::baseAddress + offsets::dwEntityList);
+                    auto entEntry = VARS::memRead<LONGLONG>(entList + 0x8 * (entityId >> 9) + 0x10);
+                    auto entity = VARS::memRead<LONGLONG>(entEntry + 120 * (entityId & 0x1FF));
+                    auto entityTeam = VARS::memRead<int>(entity + offsets::m_iTeamNum);
 
                     bool shouldShoot = true;
 
@@ -48,12 +47,13 @@ void Trigger_bot(Memory& mem, uintptr_t client) {
                     }
 
                     if (shouldShoot) {
-                        auto entityHp = mem.Read<int>(entity + offsets::m_iHealth);
+                        auto entityHp = VARS::memRead<int>(entity + offsets::m_iHealth);
                         if (entityHp > 0) {
                             std::this_thread::sleep_for(std::chrono::milliseconds(1));
                             mouse_event(MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
                             std::this_thread::sleep_for(std::chrono::milliseconds(1));
                             mouse_event(MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+                            Sleep(14);
                         }
                     }
                 }
@@ -63,24 +63,26 @@ void Trigger_bot(Memory& mem, uintptr_t client) {
     }
 }
 
-void bunny_hop(Memory& mem, uintptr_t client) {
+void bunny_hop() {
     while (true) {
         if (config::bunny_hop == true)
         {
 
-            const auto localPlayer = mem.Read<LONGLONG>(client + offsets::dwLocalPlayerPawn);
+            const auto localPlayer = VARS::memRead<LONGLONG>(VARS::baseAddress + offsets::dwLocalPlayerPawn);
             if (localPlayer) {
-                int32_t m_fFlags = mem.Read<int32_t>(localPlayer + offsets::fFlags);
+                int32_t m_fFlags = VARS::memRead<int32_t>(localPlayer + offsets::fFlags);
                 if (GetAsyncKeyState(VK_SPACE) && (m_fFlags & (1 << 0))) {
-                    mem.Write<int>(client + offsets::Force_Jump, 65537);
+                    VARS::memWrite<int>(VARS::baseAddress + offsets::Force_Jump, 65537);
                     std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    mem.Write<int>(client + offsets::Force_Jump, 256);
+                    VARS::memWrite<int>(VARS::baseAddress + offsets::Force_Jump, 256);
                 }
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
 }
+
+
 
 void mainmenu() {
     while (true) {
@@ -183,56 +185,57 @@ void mainmenu() {
     }
 }
 
-void aimbot(Memory& mem, uintptr_t client) {
+void aimbot() {
     Vector3 localPlayerPos;
 
     while (true) {
 
-        uintptr_t localPlayer = mem.Read<uintptr_t>(client + offsets::dwLocalPlayerPawn);
+        uintptr_t localPlayer = VARS::memRead<uintptr_t>(VARS::baseAddress + offsets::dwLocalPlayerPawn);
         if (!localPlayer) {
+            std::cout << "Failed to find local player." << std::endl;
             continue;
         }
 
-        localPlayerPos = mem.Read<Vector3>(localPlayer + offsets::vecOrigin);
+        localPlayerPos = VARS::memRead<Vector3>(localPlayer + offsets::vecOrigin);
 
-        Vector3 viewAngles = mem.Read<Vector3>(client + offsets::dwViewAngles);
+        Vector3 viewAngles = VARS::memRead<Vector3>(VARS::baseAddress + offsets::dwViewAngles);
 
         float closestDistance = FLT_MAX;
         uintptr_t closestEntityPawn = 0;
 
         for (int i = 0; i < 64; i++) {
-            uintptr_t Entity = mem.Read<uintptr_t>(client + offsets::dwEntityList);
+            uintptr_t Entity = VARS::memRead<uintptr_t>(VARS::baseAddress + offsets::dwEntityList);
 
-            uintptr_t listEntity = mem.Read<uintptr_t>(Entity + ((8 * (i & 0x7FFF) >> 9) + 16));
+            uintptr_t listEntity = VARS::memRead<uintptr_t>(Entity + ((8 * (i & 0x7FFF) >> 9) + 16));
             if (listEntity == 0)
                 continue;
 
-            uintptr_t entityController = mem.Read<uintptr_t>(listEntity + (120) * (i & 0x1FF));
+            uintptr_t entityController = VARS::memRead<uintptr_t>(listEntity + (120) * (i & 0x1FF));
             if (entityController == 0)
                 continue;
 
-            uintptr_t entityControllerPawn = mem.Read<uintptr_t>(entityController + 0x7E4);
+            uintptr_t entityControllerPawn = VARS::memRead<uintptr_t>(entityController + 0x7E4);
             if (entityControllerPawn == 0)
                 continue;
 
-            listEntity = mem.Read<uintptr_t>(Entity + (0x8 * ((entityControllerPawn & 0x7FFF) >> 9) + 16));
+            listEntity = VARS::memRead<uintptr_t>(Entity + (0x8 * ((entityControllerPawn & 0x7FFF) >> 9) + 16));
             if (listEntity == 0)
                 continue;
 
-            uintptr_t entityPawn = mem.Read<uintptr_t>(listEntity + (120) * (entityControllerPawn & 0x1FF));
+            uintptr_t entityPawn = VARS::memRead<uintptr_t>(listEntity + (120) * (entityControllerPawn & 0x1FF));
             if (entityPawn == 0)
                 continue;
 
-            int playerTeam = mem.Read<int>(entityPawn + offsets::m_iTeamNum);
-            int playerHealth = mem.Read<int>(entityPawn + offsets::m_iHealth);
+            int playerTeam = VARS::memRead<int>(entityPawn + offsets::m_iTeamNum);
+            int playerHealth = VARS::memRead<int>(entityPawn + offsets::m_iHealth);
 
 
 
-            if (config::team_check == true )
+            if (config::team_check == true)
             {
-                if (playerTeam != mem.Read<int>(localPlayer + offsets::m_iTeamNum) && playerHealth > 0)
+                if (playerTeam != VARS::memRead<int>(localPlayer + offsets::m_iTeamNum) && playerHealth > 0)
                 {
-                    Vector3 enemyPos = mem.Read<Vector3>(entityPawn + offsets::vecOrigin);
+                    Vector3 enemyPos = VARS::memRead<Vector3>(entityPawn + offsets::vecOrigin);
                     float distance = sqrt(pow(localPlayerPos.x - enemyPos.x, 2) +
                         pow(localPlayerPos.y - enemyPos.y, 2) +
                         pow(localPlayerPos.z - enemyPos.z, 2));
@@ -247,15 +250,15 @@ void aimbot(Memory& mem, uintptr_t client) {
                     }
                 }
             }
-    
-        else
-        {
-                if (playerHealth > 0 ) {
+
+            else
+            {
+                if (playerHealth > 0) {
 
 
 
 
-                    Vector3 enemyPos = mem.Read<Vector3>(entityPawn + offsets::vecOrigin);
+                    Vector3 enemyPos = VARS::memRead<Vector3>(entityPawn + offsets::vecOrigin);
                     float distance = sqrt(pow(localPlayerPos.x - enemyPos.x, 2) +
                         pow(localPlayerPos.y - enemyPos.y, 2) +
                         pow(localPlayerPos.z - enemyPos.z, 2));
@@ -272,79 +275,70 @@ void aimbot(Memory& mem, uintptr_t client) {
             }
         }
 
-        int PlayerHealth = mem.Read<int>(closestEntityPawn + offsets::m_iHealth);
-        if (GetAsyncKeyState(VK_SHIFT) && config::aimbot && closestEntityPawn != 0 && PlayerHealth > 0 && PlayerHealth <= 100) {
+
+        if (GetAsyncKeyState(VK_SHIFT) && config::aimbot == true) {
             if (closestEntityPawn != 0) {
-                if (PlayerHealth <= 0 || PlayerHealth > 100)
-                    continue;
-               
-                Vector3 closestEnemyPos = mem.Read<Vector3>(closestEntityPawn + offsets::vecOrigin);
+
+
+                Vector3 closestEnemyPos = VARS::memRead<Vector3>(closestEntityPawn + offsets::vecOrigin);
                 Vector3 angleToEnemy = CalcAngle(localPlayerPos, closestEnemyPos);
 
-              
-                Vector3 currentViewAngles = mem.Read<Vector3>(client + offsets::dwViewAngles);
-                angleToEnemy.x = currentViewAngles.x; 
-                angleToEnemy.z = currentViewAngles.z; 
-    
 
-                mem.Write<Vector3>(client + offsets::dwViewAngles, angleToEnemy);
-                continue;
+                
+                VARS::memWrite<Vector3>(VARS::baseAddress + offsets::dwViewAngles, angleToEnemy);
             }
         }
-
-
 
     }
 }
 
-void Glowesp(Memory& mem, uintptr_t client)
+void Glowesp()
 {
     while (true) {
 
-        uintptr_t localPlayer = mem.Read<uintptr_t>(client + offsets::dwLocalPlayerPawn);
+        uintptr_t localPlayer = VARS::memRead<uintptr_t>(VARS::baseAddress + offsets::dwLocalPlayerPawn);
         if (!localPlayer) {
             continue;
         }
 
 
 
-        Vector3 viewAngles = mem.Read<Vector3>(client + offsets::dwViewAngles);
+        Vector3 viewAngles = VARS::memRead<Vector3>(VARS::baseAddress + offsets::dwViewAngles);
 
         float closestDistance = FLT_MAX;
         uintptr_t closestEntityPawn = 0;
 
         for (int i = 0; i < 64; i++) {
-            uintptr_t Entity = mem.Read<uintptr_t>(client + offsets::dwEntityList);
+            uintptr_t Entity = VARS::memRead<uintptr_t>(VARS::baseAddress + offsets::dwEntityList);
 
-            uintptr_t listEntity = mem.Read<uintptr_t>(Entity + ((8 * (i & 0x7FFF) >> 9) + 16));
+            uintptr_t listEntity = VARS::memRead<uintptr_t>(Entity + ((8 * (i & 0x7FFF) >> 9) + 16));
             if (listEntity == 0)
                 continue;
 
-            uintptr_t entityController = mem.Read<uintptr_t>(listEntity + (120) * (i & 0x1FF));
+            uintptr_t entityController = VARS::memRead<uintptr_t>(listEntity + (120) * (i & 0x1FF));
             if (entityController == 0)
                 continue;
 
-            uintptr_t entityControllerPawn = mem.Read<uintptr_t>(entityController + 0x7E4);
+            uintptr_t entityControllerPawn = VARS::memRead<uintptr_t>(entityController + 0x7E4);
             if (entityControllerPawn == 0)
                 continue;
 
-            listEntity = mem.Read<uintptr_t>(Entity + (0x8 * ((entityControllerPawn & 0x7FFF) >> 9) + 16));
+            listEntity = VARS::memRead<uintptr_t>(Entity + (0x8 * ((entityControllerPawn & 0x7FFF) >> 9) + 16));
             if (listEntity == 0)
                 continue;
 
-            uintptr_t entityPawn = mem.Read<uintptr_t>(listEntity + (120) * (entityControllerPawn & 0x1FF));
+            uintptr_t entityPawn = VARS::memRead<uintptr_t>(listEntity + (120) * (entityControllerPawn & 0x1FF));
             if (entityPawn == 0)
                 continue;
 
             if (config::Glow_esp == true)
             {
                
-                    mem.Write<float>(entityPawn + offsets::m_fl_detected_by_enemy_sensor_time, 86400.f);
-                
+                    VARS::memWrite<float>(entityPawn + offsets::m_fl_detected_by_enemy_sensor_time, 86400.f);
             }
             else
             {
-                mem.Write<float>(entityPawn + offsets::m_fl_detected_by_enemy_sensor_time, 0.f);
+                VARS::memWrite<float>(entityPawn + offsets::m_fl_detected_by_enemy_sensor_time, 0.f);
             }
         }
     }
@@ -354,11 +348,10 @@ void Glowesp(Memory& mem, uintptr_t client)
 
 
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
-    Memory mem{ "cs2.exe" };
-    const auto client = mem.GetModuleAddress("client.dll");
 
 
-    if (!client)
+
+    if (!VARS::baseAddress)
     {
         cout << "cs2 not found";
         Sleep(5000);
@@ -366,17 +359,18 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nSho
     }
 
 
+   
+ 
     
-    std::thread ab(aimbot, std::ref(mem), client);
+    std::thread ab(aimbot);
 
-    std::thread bh_thread(bunny_hop, std::ref(mem), client);
-    std::thread tb_thread(Trigger_bot, std::ref(mem), client);
+    std::thread bh_thread(bunny_hop);
+    std::thread tb_thread(Trigger_bot);
 
-    std::thread glowesp_thread(Glowesp, std::ref(mem), client);
+    std::thread glowesp_thread(Glowesp);
 
     std::thread mm_thread(mainmenu);
 
-  
     mm_thread.join();
     ab.join();
 
@@ -384,7 +378,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nSho
 
     bh_thread.join();
     tb_thread.join();
-    
+
+
 
 
 
