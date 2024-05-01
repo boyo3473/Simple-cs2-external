@@ -4,22 +4,6 @@
 #include "offsets.h"
 #include "Vector3.h"
 
-
-
-//imgui
-#include <Windows.h>
-#include <tchar.h>
-#include <d3d11.h>
-#include <d3dcompiler.h>
-#include <DirectXMath.h>
-#include "imgui/imgui.h"
-#include "imgui_impl_dx11.h"
-#include "imgui_impl_win32.h"
-#include "imgui_internal.h"
-
-
-
-
 using namespace std;
 
 namespace config {
@@ -28,11 +12,9 @@ namespace config {
     bool bunny_hop = true;
     bool team_check = true;
     bool Glow_esp = true;
+    float FOV = 3;
 
 }
-
-
-
 
 
 
@@ -255,7 +237,7 @@ void aimbot() {
 
                     Vector3 vecToEnemy = { enemyPos.x - localPlayerPos.x, enemyPos.y - localPlayerPos.y, enemyPos.z - localPlayerPos.z };
                     Vector3 angleToEnemy = CalcAngle(localPlayerPos, enemyPos);
-                    float fov = 3.0f;
+                    float fov = config::FOV;
 
                     if (fabs(angleToEnemy.y - viewAngles.y) < fov && distance < closestDistance) {
                         closestDistance = distance;
@@ -278,7 +260,7 @@ void aimbot() {
 
                     Vector3 vecToEnemy = { enemyPos.x - localPlayerPos.x, enemyPos.y - localPlayerPos.y, enemyPos.z - localPlayerPos.z };
                     Vector3 angleToEnemy = CalcAngle(localPlayerPos, enemyPos);
-                    float fov = 3.0f;
+                    float fov = config::FOV;
 
                     if (fabs(angleToEnemy.y - viewAngles.y) < fov && distance < closestDistance) {
                         closestDistance = distance;
@@ -289,6 +271,9 @@ void aimbot() {
         }
 
         int PlayerHealth = VARS::memRead<int>(closestEntityPawn + offsets::m_iHealth);
+
+
+
         if (GetAsyncKeyState(VK_SHIFT) && config::aimbot && closestEntityPawn != 0 && PlayerHealth > 0 && PlayerHealth <= 100) {
             if (closestEntityPawn != 0) {
                 if (PlayerHealth <= 0 || PlayerHealth > 100)
@@ -368,6 +353,7 @@ void Glowesp()
 
 
 
+
 int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nShowCmd) {
 
 
@@ -381,7 +367,6 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nSho
 
 
    
- 
     
     std::thread ab(aimbot);
 
@@ -399,6 +384,8 @@ int main(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nSho
 
     bh_thread.join();
     tb_thread.join();
+
+
 
 
 
